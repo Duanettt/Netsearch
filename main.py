@@ -1,12 +1,16 @@
 import parser
 from parser import HTMLParser
+from parser import WebScraper
+from parser import read_folder_path
 
 folder_path = './videogames/'
-user_parser = HTMLParser(folder_path)
+file_path_list = read_folder_path(folder_path)
 
-user_parsed_html_list = []
+user_parser = HTMLParser(file_path_list)
+
 parsed_html_list = user_parser.parse_html()
 
-test_parsed_html_str = parsed_html_list[1]
-print(test_parsed_html_str)
+user_parser.tokenize_html()
+
+# print(parsed_html_list[1])
 
