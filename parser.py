@@ -5,12 +5,14 @@ import re
 import nltk
 nltk.download('punkt')
 nltk.download('punkt_tab')
+import spacy
 from nltk.tokenize import word_tokenize
 from bs4 import BeautifulSoup
 
 
 # Define the path to your HTML files
 
+# Static method for reading in our folder path for our files
 def read_folder_path(user_folder_path):
     file_path_list = []
     for filename in os.listdir(user_folder_path):
@@ -20,12 +22,21 @@ def read_folder_path(user_folder_path):
                 print(file_path) # Print each file path to check it's looping correctly
     return file_path_list
 
-
+# REGEX method: Needed to clean html for easier tokenization.
 def cleanup_html(html):
-    tagless = re.sub(r'<.*?>', '', html)
-    # Remove extra whitespace
-    clean_text = re.sub(r'\s+', ' ', tagless).strip()
-    return clean_text
+    # Remove JavaScript blocks (simple approach, works for inline JS)
+    text = re.sub(r'<script.*?>.*?</script>', '', html, flags=re.DOTALL)  # Inline script tags
+    text = re.sub(r'document.write\(.*?\);', '', text)  # Document writes
+    text = re.sub(r'<[^>]+>', '', text)  # HTML tags
+    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)  # Inline comments (/*...*/)
+    text = re.sub(r'//.*', '', text)  # Inline comments (//...)
+
+    # Remove unnecessary punctuation, leftover quotes, etc.
+    text = re.sub(r'["\'{}();]', '', text)  # Specific symbols
+    text = re.sub(r'\s{2,}', ' ', text)  # Replace multiple spaces with a single space
+    text = text.strip()  # Remove leading/trailing whitespace
+
+    return text
 
 
 class HTMLParser:
@@ -50,12 +61,17 @@ class HTMLParser:
         tokenized_word = word_tokenize(self.parsed_html_list[0])
         print(tokenized_word)
 
-    def parse_html_write(self):
-        parsed_html = self.parse_html()
-
+    # Debug methods write outs.
+    def parse_html_write_out(self):
         with open("output.txt", 'w', encoding='utf-8') as file:
-            file.write(json.dumps(parsed_html))
+            for i in range(len(self.parsed_html_list)):
+                file.write(self.parsed_html_list[i])
 
+    def tokenise_html_write_out(self):
+        with open("tokenise_output.txt", 'w', encoding='utf-8') as file:
+            for i in range(len(self.parsed_html_list)):
+                tokenized_word = word_tokenize(self.parsed_html_list[i])
+                file.write(" ".join(tokenized_word) + "\n")
 
 
 class WebScraper:
