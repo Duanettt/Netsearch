@@ -3,11 +3,15 @@ import json
 import requests
 import re
 import nltk
+from nltk.corpus import stopwords
+
 nltk.download('punkt')
 nltk.download('punkt_tab')
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import RegexpTokenizer
 from bs4 import BeautifulSoup
+
+stops = set(stopwords.words('english'))
 
 # Define the path to your HTML files
 
@@ -37,6 +41,11 @@ def cleanup_html(html):
 
     return text
 
+def remove_stopwords(tokens):
+    cleanedTokens = []
+    cleanedTokens += [t for t in tokens if t not in stops]
+    return cleanedTokens
+
 
 class HTMLParser:
     def __init__(self, file_path_list):
@@ -58,47 +67,48 @@ class HTMLParser:
 
         return self.parsed_html_list # Return the list of parsed HTML content
 
-    def tokenize_html(self):
-        for i in range(len(self.parsed_html_list)):
-            tokenized_word = word_tokenize(self.parsed_html_list[i])
-            self.tokenized_data.append({'file': os.path.basename(self.file_path_list[i]), 'tokens': tokenized_word})
-        return self.tokenized_data
+    # def tokenize_html(self):
+    #     for i in range(len(self.parsed_html_list)):
+    #         tokenized_word = word_tokenize(self.parsed_html_list[i])
+    #         self.tokenized_data.append({'file': os.path.basename(self.file_path_list[i]), 'tokens': tokenized_word})
+    #     return self.tokenized_data
 
-    def parse_html_categorize_tc(self):
+    def tokenize_content(self, cleaned_html):
+        tokenizer = RegexpTokenizer(r'\w+')
+        tokens = tokenizer.tokenize(cleaned_html)
+        cleaned_tokens = remove_stopwords(tokens)
+        return cleaned_tokens
+
+    def categorize_content(self, title, file_path, cleaned_tokens):
+        if title not in self.categorized_data:
+            self.categorized_data[title] = []
+
+        file_name = os.path.basename(file_path)
+
+        # Append the file info and tokens under the title
+        self.categorized_data[title].append({
+            'file': file_name,
+            'tokens': cleaned_tokens
+        })
+
+
+
+    def parse_and_process_html(self):
         for file_path in self.file_path_list:
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
                 soup = BeautifulSoup(content, 'html5lib')
 
-                # So firstly we base our tokens on our title so we find our titles
-
+                # Extract the title of the page
                 title = soup.title.string if soup.title else 'Title'
-                # We then find our information based on the content ID in our div tag in the website.
                 information = soup.find_all(id='content')
-
                 information_contents = [info.get_text() for info in information]
-                ## We then clean our html up by removing tags and spaces etcetera
                 cleaned_html = cleanup_html(''.join(information_contents))
 
-                # Tokenize cleaned HTML content
-                # We created our own tokenizer solely based on words.
-                tokenizer = RegexpTokenizer(r'\w+')
+                # Tokenize the cleaned HTML
+                tokens = self.tokenize_content(cleaned_html)
 
-                # We then ,using this tokenizer, to tokenize based on the regex expressed above
-                tokens = tokenizer.tokenize(cleaned_html)
-
-                 # We then for each entry in our dictionary have to check if the title is in there or not to prevent errors
-                if title not in self.categorized_data:
-                    self.categorized_data[title] = []
-
-                # Append the file info and tokens as a new entry under the main heading
-                self.categorized_data[title].append({
-                    'file': os.path.basename(file_path),
-                    'title': title,
-                    'information': cleaned_html,
-                    'tokens': tokens
-                })
-
+                self.categorize_content(title, file_path, tokens)
 
     # Debug methods write outs.
     def parse_html_write_out(self):
@@ -116,15 +126,6 @@ class HTMLParser:
         """Write the categorized data to a JSON file for structured storage."""
         with open(output_filename, 'w', encoding='utf-8') as file:
             json.dump(self.categorized_data, file, ensure_ascii=False, indent=4)
-
-# Figuring out this method
-    # def write_categorized_data_txt(self, output_filename="categorized_data.txt"):
-    #     with open(output_filename, 'w', encoding='utf-8') as file:
-    #         for categorized_data in self.categorized_data.values():
-    #
-
-
-
 
 class WebScraper:
     def __init__(self, userURL):
