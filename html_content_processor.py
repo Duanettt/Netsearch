@@ -4,9 +4,8 @@ import requests
 import re
 import nltk
 from nltk.corpus import stopwords
-
-nltk.download('punkt')
-nltk.download('punkt_tab')
+# nltk.download('punkt')
+# nltk.download('punkt_tab')
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import RegexpTokenizer
 from bs4 import BeautifulSoup
@@ -22,7 +21,7 @@ def read_folder_path(user_folder_path):
             if filename.endswith('.html'):
                 file_path = os.path.join(user_folder_path, filename)
                 file_path_list.append(file_path)
-                print(file_path) # Print each file path to check it's looping correctly
+                # print(file_path) # Print each file path to check it's looping correctly
     return file_path_list
 
 # REGEX method: Needed to clean html for easier tokenization.
@@ -91,24 +90,43 @@ class HTMLParser:
             'tokens': cleaned_tokens
         })
 
-
-
     def parse_and_process_html(self):
+        print("Now parsing and processing HTML files!")
         for file_path in self.file_path_list:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                content = file.read()
-                soup = BeautifulSoup(content, 'html5lib')
+            print(f"[INFO] Processing file: {file_path}")
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    print(f"[INFO] Successfully read content from: {file_path}")
 
-                # Extract the title of the page
-                title = soup.title.string if soup.title else 'Title'
-                information = soup.find_all(id='content')
-                information_contents = [info.get_text() for info in information]
-                cleaned_html = cleanup_html(''.join(information_contents))
+                    # Parse HTML content using BeautifulSoup
+                    soup = BeautifulSoup(content, 'html5lib')
 
-                # Tokenize the cleaned HTML
-                tokens = self.tokenize_content(cleaned_html)
+                    # Extract the title of the page
+                    title = soup.title.string if soup.title else 'Title'
+                    print(f"[DEBUG] Extracted title: {title}")
 
-                self.categorize_content(title, file_path, tokens)
+                    # Extract content with the specific ID
+                    information = soup.find_all(id='content')
+                    if not information:
+                        print(f"[WARNING] No content found with ID 'content' in file: {file_path}")
+                    information_contents = [info.get_text() for info in information]
+                    print(f"[DEBUG] Extracted text from content ID: {information_contents}")
+
+                    # Clean up HTML content
+                    cleaned_html = cleanup_html(''.join(information_contents))
+                    print(f"[DEBUG] Cleaned HTML content: {cleaned_html[:100]}...")
+
+                    # Tokenize the cleaned HTML
+                    tokens = self.tokenize_content(cleaned_html)
+                    print(f"[DEBUG] Tokenized content ({len(tokens)} tokens): {tokens[:10]}...")
+
+                    # Categorize content
+                    self.categorize_content(title, file_path, tokens)
+                    print(f"[INFO] Categorized content under title: {title}")
+
+            except Exception as e:
+                print(f"[ERROR] Failed to process file: {file_path}. Error: {e}")
 
     # Debug methods write outs.
     def parse_html_write_out(self):

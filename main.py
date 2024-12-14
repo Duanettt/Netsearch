@@ -20,8 +20,11 @@ user_parser.parse_and_process_html()
 search_engine = SearchEngine(user_parser)
 
 search_engine.build_inverted_index()
+print(search_engine.find_unique_terms())
 
-# search_engine.user_prompt()
+search_engine.debug_tf_idf()
+
+search_engine.user_prompt_tfidf()
 
 search_engine.write_inverted_index_to_file()
 

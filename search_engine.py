@@ -8,15 +8,22 @@ from html_content_processor import WebScraper
 from html_content_processor import read_folder_path
 
 import data_formatter
+from net_tf_Idf_calculator import NetMath
+
 
 class SearchEngine:
     def __init__(self, html_parser):
+        self.tf_idf_matrix = {}
         self.HTMLParser = html_parser
         self.tokenized_data = []
         self.inverted_index = {}
         self.vocab = {}
         self.docIDs = {}
         self.postings = {}
+
+        # TFIDF calculations
+        self.tfidf_calculator = None
+        self.cosine_sim_calculator = None
 
         self.vocab_counter = 0   # Tracks unique ID for each vocab term
         self.doc_counter = 0     # Tracks unique ID for each document
@@ -28,6 +35,10 @@ class SearchEngine:
                 file_name = file['file']
                 tokens = file['tokens']
                 self.update_inverted_index(file_name, tokens)
+
+        print(len(self.docIDs))
+        self.tfidf_calculator = NetMath.TFIDFCalculator(self.inverted_index, len(self.docIDs))
+        self.cosine_sim_calculator = NetMath.CosineSimilarity()
 
     def update_inverted_index(self, file_name, tokens):
         """
@@ -80,7 +91,6 @@ class SearchEngine:
         with open("inverted_index.json", 'w', encoding='utf-8') as f:
             json.dump(self.inverted_index, f, ensure_ascii=False, indent=4)
 
-
     def user_prompt(self):
         # We create a reverse look up document to allow us identify which html files match
         # Easier for debugging
@@ -89,6 +99,7 @@ class SearchEngine:
         # to our vocab ID and we use that for documents.
         while True:
             query = input("What would you like to search for? ")
+            query_tf_idf = self.tfidf_calculator.calculate_query_tf_idf(query)
             if query == "quit":
                 break
             if query in self.vocab:
@@ -98,3 +109,40 @@ class SearchEngine:
                     file_name = reverse_lookup_document_id.get(d, "Unknown")
                     print(file_name)
 
+    def user_prompt_tfidf(self):
+        reverse_lookup_document_id = {v: k for k, v in self.docIDs.items()}
+
+        while True:
+            query = input("What would you like to search for? ")
+            query_tf_idf = self.tfidf_calculator.calculate_query_tf_idf(query)
+
+            if query == "quit":
+                break
+
+            # Initialize vectors for the query and documents
+            query_vector, doc_vectors = self.cosine_sim_calculator.initialize_vectors(query_tf_idf, len(self.vocab),
+                                                                                      self.tfidf_calculator.tf_idf_matrix)
+
+            # Calculate cosine similarity for each document
+            similarities = []
+            for doc_id, doc_vector in doc_vectors:
+                similarity = self.cosine_sim_calculator.calculate_cosine_similarity(query_vector, doc_vector)
+                similarities.append((reverse_lookup_document_id[doc_id], similarity))
+
+            # Rank documents by similarity
+            similarities.sort(key=lambda x: x[1], reverse=True)
+            print("Ranked results:")
+            for doc, sim in similarities:
+                print(f"{doc}: {sim}")
+
+    # Utility functions
+    def find_unique_terms(self):
+        unique_terms = []
+        for term, docs in self.inverted_index.items():
+            if len(docs) == 1:  # Only one document contains this term
+                unique_terms.append(term)
+        return unique_terms
+
+    def debug_tf_idf(self):
+        self.tfidf_calculator.calculate_all_tf_idf()
+        self.tfidf_calculator.save_tf_idf_to_file()
