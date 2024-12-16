@@ -21,9 +21,10 @@ class SearchEngine:
         self.docIDs = {}
         self.postings = {}
 
-        # TFIDF calculations
+        # TFIDF calculations (Change so they all initialise our tf_idf calculator and stuff)
         self.tfidf_calculator = None
         self.cosine_sim_calculator = None
+        self.spelling_corrector = NetMath.SpellingCorrector(self.vocab)
 
         self.vocab_counter = 0   # Tracks unique ID for each vocab term
         self.doc_counter = 0     # Tracks unique ID for each document
@@ -100,6 +101,7 @@ class SearchEngine:
         while True:
             query = input("What would you like to search for? ")
             query_tf_idf = self.tfidf_calculator.calculate_query_tf_idf(query)
+            print(query_tf_idf)
             if query == "quit":
                 break
             if query in self.vocab:
@@ -114,26 +116,33 @@ class SearchEngine:
 
         while True:
             query = input("What would you like to search for? ")
+
+            self.spelling_corrector.correct_terms(query)
+            self.spelling_corrector.write_all_edit_distance_vocab_json()
+
+            # Step 1: Get the query's TF-IDF values
             query_tf_idf = self.tfidf_calculator.calculate_query_tf_idf(query)
+
+            # Step 2: Initialize the query and document vectors
+            query_vector, doc_vectors = self.cosine_sim_calculator.initialize_vectors(query_tf_idf,self.tfidf_calculator.tf_idf_matrix)
+
+            # Step 3: Calculate cosine similarities for the query with each document
+            similarities = []
+            for doc_id, doc_vector in doc_vectors:
+                cosine_sim = self.cosine_sim_calculator.calculate_cosine_similarity(doc_vector)
+                similarities.append((doc_id, cosine_sim))
+
+            # Step 4: Sort the documents by cosine similarity in descending order
+            similarities.sort(key=lambda x: x[1], reverse=True)
+
+            # Step 5: Print the sorted results (documents and their similarity scores)
+            for doc_id, similarity in similarities:
+                doc_id = self.docIDs[doc_id]
+                doc_name = reverse_lookup_document_id.get(doc_id, "Unknown")
+                print(f"Document: {doc_name}, Cosine Similarity: {similarity}")
 
             if query == "quit":
                 break
-
-            # Initialize vectors for the query and documents
-            query_vector, doc_vectors = self.cosine_sim_calculator.initialize_vectors(query_tf_idf, len(self.vocab),
-                                                                                      self.tfidf_calculator.tf_idf_matrix)
-
-            # Calculate cosine similarity for each document
-            similarities = []
-            for doc_id, doc_vector in doc_vectors:
-                similarity = self.cosine_sim_calculator.calculate_cosine_similarity(query_vector, doc_vector)
-                similarities.append((reverse_lookup_document_id[doc_id], similarity))
-
-            # Rank documents by similarity
-            similarities.sort(key=lambda x: x[1], reverse=True)
-            print("Ranked results:")
-            for doc, sim in similarities:
-                print(f"{doc}: {sim}")
 
     # Utility functions
     def find_unique_terms(self):

@@ -2,6 +2,8 @@ import json
 import math
 
 import numpy as np
+# If the tfidf is not working we can just use sk learn.
+# from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 class NetMath:
@@ -77,9 +79,10 @@ class NetMath:
                 tf_idf = query_tf[term] * idf
                 query_tf_idf[term] = tf_idf
 
-            print(query_tf_idf)
-
             return query_tf_idf
+
+
+
 
     class CosineSimilarity:
         def __init__(self):
@@ -89,8 +92,8 @@ class NetMath:
             self.query_tf_idf = None
             self.doc_tf_idf = None
 
-        def calculate_cosine_similarity(self, query_tf_idf, doc_tf_idf):
-            dot_product = np.dot(self.query_vector, self.doc_vectors[0][1])
+        def calculate_cosine_similarity(self, doc_vector):
+            dot_product = np.dot(self.query_vector, doc_vector)
 
             # normalize both
             query_norm = np.linalg.norm(self.query_vector)
@@ -103,7 +106,7 @@ class NetMath:
 
             return dot_product / (query_norm * doc_norm)
 
-        def initialize_vectors(self, query_tf_idf, vocab_size, doc_tf_idf):
+        def initialize_vectors(self, query_tf_idf, doc_tf_idf):
             """
             Convert TF-IDF scores for the query and documents into vectors and store them in class member variables.
             :param query_tf_idf: Dictionary of query TF-IDF values.
@@ -113,16 +116,82 @@ class NetMath:
             """
             # Store the input values as class member variables
             self.query_tf_idf = query_tf_idf
-            self.vocab_size = vocab_size
             self.doc_tf_idf = doc_tf_idf
 
+            print(query_tf_idf)
+            # This basically identifies which valu
+            vocab_terms = sorted(
+                set(query_tf_idf.keys()).union(set(term for doc in doc_tf_idf.values() for term in doc.keys())))
+
+
             # Convert query TF-IDF to a numpy vector (one-dimensional array)
-            self.query_vector = np.array([query_tf_idf.get(term, 0) for term in range(vocab_size)])
+            self.query_vector = np.array([query_tf_idf.get(term, 0) for term in vocab_terms])
 
             # Convert all document TF-IDFs to numpy vectors (two-dimensional array)
             self.doc_vectors = []
-            for doc_id, tf_idf_scores in doc_tf_idf:
-                doc_vector = np.array([tf_idf_scores.get(term, 0) for term in range(vocab_size)])
+            for doc_id, tf_idf_scores in doc_tf_idf.items():
+                doc_vector = np.array([tf_idf_scores.get(term, 0) for term in vocab_terms])
                 self.doc_vectors.append((doc_id, doc_vector))
 
             return self.query_vector, self.doc_vectors
+
+    class SpellingCorrector:
+        def __init__(self, vocabulary):
+            self.vocabulary = vocabulary
+            self.vocab_terms_dist = {}
+
+        def lst_distance(self, s1: str, s2: str):
+            s1 = ' ' + s1
+            s2 = ' ' + s2
+
+            m = np.zeros((len(s1), len(s2)), dtype=int)  # Ensure the matrix is initialized with integer type
+            # Left-hand column and top row
+            m[0, :] = np.arange(len(s2))
+            m[:, 0] = np.arange(len(s1))
+
+            for i in range(1, len(s1)):
+                for j in range(1, len(s2)):
+                    offset = 0 if s1[i] == s2[j] else 1
+                    m[i][j] = min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + offset)
+
+            return m[len(s1) - 1][len(s2) - 1]
+
+        def generate_all_distance_vocab(self, term):
+            if self.vocabulary is None:
+                raise ValueError("Vocabulary is none... Please initialise the vocabulary first.")
+
+            for vocab_term in self.vocabulary:
+                self.vocab_terms_dist[vocab_term] = self.lst_distance(term, vocab_term)
+
+            return self.vocab_terms_dist
+
+        def write_all_edit_distance_vocab_json(self, output_file="vocab_distances.json"):
+            # Convert numpy.int64 values to Python int
+            converted_vocab_terms_dist = {k: int(v) for k, v in self.vocab_terms_dist.items()}
+
+            try:
+                with open(output_file, "w", encoding="utf-8") as f:
+                    json.dump(converted_vocab_terms_dist, f, ensure_ascii=False, indent=4)
+                print(f"[INFO] Vocabulary distances saved to {output_file}")
+            except Exception as e:
+                print(f"[ERROR] Failed to write JSON: {e}")
+
+
+        def correct_terms(self, term):
+            if self.vocabulary is None:
+                raise ValueError("Vocabulary is none... Please initialise the vocabulary first.")
+
+
+            correct_terms = {}
+
+            min_distance = float("inf")
+            closest_term = term
+
+            for vocab_term in self.vocabulary:
+                distance = self.lst_distance(term, vocab_term)
+                if distance < 6:
+                    correct_terms[vocab_term] = distance
+
+            self.vocab_terms_dist = correct_terms
+            correct_terms = sorted(correct_terms.items(), key=lambda x: x[1], reverse=False)
+            return correct_terms
