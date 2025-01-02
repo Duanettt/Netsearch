@@ -1,0 +1,9 @@
+[] - Spelling corrections, firstly tokenize queries with more than one word. Then figure out a way to
+calculate edit distances between these.
+
+We can use the titles for additional spelling correction and edit distance calculation.
+
+[] - Find some way to implement LLM query expansion...
+[] - NER.
+[70% Performance has Increased] - Research ways to increase performance
+[X] - Use csv and json files to tokenize data.

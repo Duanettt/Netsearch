@@ -78,7 +78,7 @@ class HTMLParser:
         cleaned_tokens = remove_stopwords(tokens)
         return cleaned_tokens
 
-    def categorize_content(self, title, file_path, cleaned_tokens):
+    def categorize_content(self, title, file_path, cleaned_tokens, url):
         if title not in self.categorized_data:
             self.categorized_data[title] = []
 
@@ -87,11 +87,44 @@ class HTMLParser:
         # Append the file info and tokens under the title
         self.categorized_data[title].append({
             'file': file_name,
-            'tokens': cleaned_tokens
+            'tokens': cleaned_tokens,
+            'url': url.replace('\\', '/')
         })
 
-    def parse_and_process_html(self):
+    def save_to_json(self, output_filename="parsed_data.json"):
+        """Save parsed data to a JSON file."""
+        with open(output_filename, 'w', encoding='utf-8') as file:
+            json.dump({
+                'parsed_html_list': self.parsed_html_list,
+                'tokenized_data': self.tokenized_data,
+                'categorized_data': self.categorized_data
+            }, file, ensure_ascii=False, indent=4)
+        print(f"[INFO] Data successfully saved to {output_filename}")
+
+    def load_from_json(self, input_filename="parsed_data.json"):
+        """Load parsed data from a JSON file."""
+        try:
+            with open(input_filename, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                self.parsed_html_list = data['parsed_html_list']
+                self.tokenized_data = data['tokenized_data']
+                self.categorized_data = data['categorized_data']
+            print(f"[INFO] Data successfully loaded from {input_filename}")
+        except FileNotFoundError:
+            print(f"[ERROR] JSON file {input_filename} not found.")
+        except Exception as e:
+            print(f"[ERROR] Failed to load data from JSON file: {e}")
+
+    def parse_and_process_html(self, use_json = False):
         print("Now parsing and processing HTML files!")
+        if use_json:
+            try:
+                self.load_from_json()
+                print("[INFO] Loaded data from JSON file.")
+                return
+            except FileNotFoundError:
+                print("[INFO] JSON file not found. Proceeding to parse HTML.")
+
         for file_path in self.file_path_list:
             print(f"[INFO] Processing file: {file_path}")
             try:
@@ -101,6 +134,10 @@ class HTMLParser:
 
                     # Parse HTML content using BeautifulSoup
                     soup = BeautifulSoup(content, 'html5lib')
+
+                    url = f"file://{os.path.abspath(file_path)}"
+                    # Need to grab URL
+                    print(f"[DEBUG] Extracted URL: {url}")
 
                     # Extract the title of the page
                     title = soup.title.string if soup.title else 'Title'
@@ -122,11 +159,13 @@ class HTMLParser:
                     print(f"[DEBUG] Tokenized content ({len(tokens)} tokens): {tokens[:10]}...")
 
                     # Categorize content
-                    self.categorize_content(title, file_path, tokens)
+                    self.categorize_content(title, file_path, tokens, url)
                     print(f"[INFO] Categorized content under title: {title}")
 
             except Exception as e:
                 print(f"[ERROR] Failed to process file: {file_path}. Error: {e}")
+
+            self.save_to_json()
 
     # Debug methods write outs.
     def parse_html_write_out(self):

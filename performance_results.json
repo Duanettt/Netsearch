@@ -1,0 +1,24 @@
+[
+    {
+        "timestamp": "2024-12-29T03:08:23.326326",
+        "initialization": {
+            "total_time": 19.423639059066772,
+            "folder_path": "./videogames/"
+        },
+        "searches": [
+            {
+                "query": "gta",
+                "avg_time": 0.0037944793701171877,
+                "min_time": 0.0032842159271240234,
+                "max_time": 0.005166053771972656,
+                "std_dev": 0.0007948646659396684
+            }
+        ],
+        "index_stats": {
+            "total_documents": 399,
+            "vocabulary_size": 9608,
+            "unique_terms": 4922,
+            "entity_types": 18
+        }
+    }
+]
