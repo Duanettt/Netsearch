@@ -9,8 +9,7 @@ Netsearch is an innovative Game Search Engine built with **React Three Fiber** a
 * **Interactive 3D Interface**: Explore games in a dynamic 3D environment powered by React Three Fiber.
 * **Advanced Search Capabilities**: Leverage powerful algorithms like **TF-IDF** and **Cosine Similarity** for precise, relevant search results.
 * **Named Entity Recognition (NER)**: Enhance search results by identifying and prioritizing game-related entities such as genres, developers, platforms, and more.
-* **Efficient Query Expansion**: Use **LLM-based query expansion** to refine and broaden your search results for more accuracy.
-* **Real-Time Updates**: Stay up to date with the latest games, patches, and releases as the search engine fetches fresh data.
+* **Efficient Query Expansion**: Use **LLM-based query expansion** to refine and broaden your search results for more accuracy (Unavailable currently unless you have .env)
 
 ## 🌟 Technologies Used
 
