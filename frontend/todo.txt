@@ -1,0 +1,21 @@
+Today:
+
+[X] - Presentation Controls, when the user clicks able to drag and look around the scene whilst the overlay hides/fades out. 
+[X] - Audio implementation
+[] - Loading Manager - Revisit don't think this will work..
+[] - Loading Screen
+[] - Search bar needs to look way better... animate
+[] - Add pokemon to the background, with some animations.
+[] - Text Box for Ash maybe saying welcome
+[] - Animate the netsearch logo more.
+
+
+Extras: 
+[50% still needs some work.] - Camera Move towards the screen,
+[] - Post processing, edge detection, smoothing etcetera.
+[] - Hang things on the wall.
+[] - Make the models look a bit better
+[] - Shadows, not possible maybe just add post processing.
+[] - Maybe put a little pikachu on ash's shoulder.
+[] - Check if night time looks better.
+[] - Team Rocket flying through the air.npm install motion

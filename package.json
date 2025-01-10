@@ -1,0 +1,21 @@
+{
+  "name": "netsearch_e",
+  "version": "1.0.0",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "concurrently \"npm run start:python\" \"npm run start:react\" \"npm run start:electron\"",
+    "start:python": "cd backend && pip install -r requirements.txt && python main.py",
+    "start:react": "cd frontend && npm run dev",
+    "start:electron": "wait-on tcp:5000 && wait-on tcp:5173 && electron .",
+    "install-all": "npm install && cd frontend && npm install"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "NetSearch Electron Application",
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "electron": "^33.3.1",
+    "wait-on": "^8.0.1"
+  }
+}

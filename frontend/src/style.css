@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: 'PokemonSolid'; /* The name of your custom font */
+    src: url('fonts/Pokemon_Solid.ttf') format('truetype');
+    font-weight: 400; /* Normal weight */
+    font-style: normal; /* Regular style */
+}
+
+@font-face {
+    font-family: 'PokemonHollow'; /* The name of your custom font */
+    src: url('fonts/Pokemon_Hollow.ttf') format('truetype');
+    font-weight: 400; /* Normal weight */
+    font-style: normal; /* Regular style */
+}
+@font-face {
+    font-family: 'Pixel'; /* The name of your custom font */
+    src: url('fonts/PIXELADE.TTF') format('truetype');
+    font-weight: 400; /* Normal weight */
+    font-style: normal; /* Regular style */
+}
+
+html,
+body,
+#root
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
+.search_bar 
+{
+    background-color: white;
+    color: black;
+    font-family: Pixel;
+    width: 32rem /* 320px */;
+    padding-left: 1.5rem /* 24px */;
+    padding-right: 1.5rem /* 24px */;
+    padding-top: 0.75rem /* 12px */;
+    padding-bottom: 0.75rem /* 12px */;
+    border-top-left-radius: 0.5rem /* 8px */;
+    border-bottom-left-radius: 0.5rem /* 8px */;
+    font-size: 1.25rem /* 20px */;
+    line-height: 1.75rem /* 28px */;
+    border-radius: 15px;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 10px 20px 0 rgba(0, 0, 0, 0.19);
+}

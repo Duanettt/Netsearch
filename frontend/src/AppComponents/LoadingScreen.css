@@ -1,0 +1,31 @@
+@keyframes pokeball-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes slide-up {
+    from { transform: translateY(0); }
+    to { transform: translateY(-100vh); }
+}
+
+@keyframes slide-down {
+    from { transform: translateY(0); }
+    to { transform: translateY(100vh); }
+}
+
+.pokeball-spin {
+    animation: pokeball-spin 2s linear infinite;
+    transform-origin: center center;
+}
+
+.pokeball-split {
+    animation: none;
+}
+
+.pokeball-slide-up {
+    animation: slide-up 1s ease-in forwards;
+}
+
+.pokeball-slide-down {
+    animation: slide-down 1s ease-in forwards;
+}
