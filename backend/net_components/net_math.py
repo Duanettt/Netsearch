@@ -1,6 +1,7 @@
 import json
 import math
-
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
 import numpy as np
 
 
@@ -23,21 +24,21 @@ class NetMath:
             }
 
         def calculate_term_freq(self, term, doc):
-            # Retrieve the dictionary for the term and document
+            # retrieve the dictionary for the term and document
             term_data = self.inverted_index.get(term, {}).get(doc, {})
 
-            # Retrieve the frequency data for the term in the document
+            # retrieve the frequency data for the term in the document
             term_freq = term_data.get('frequency', 0)
 
-            # Retrieve metadata for the document (title, genre, etc.)
+            # retrieve metadata for the document (title, genre, etc.)
             metadata = term_data.get('metadata', {})
 
-            # Initialize the boosted term frequency with the regular frequency
+            # initialize the boosted term frequency with the regular frequency
             boosted_term_freq = term_freq
 
-            # Check if the term exists in any of the metadata fields and apply a boost
+            # if the term exists in any of the metadata fields and apply a boost
             for field, values in metadata.items():
-                # Check if the term is in the metadata field (case insensitive)
+                # if the term is in the metadata field (case insensitive)
                 if any(term.lower() == word.lower() for word in values):
                     boost = self.weights.get(field, 1.0)  # Apply the field's weight (default to 1.0)
                     boosted_term_freq += term_freq * boost  # Boost the term frequency
@@ -103,10 +104,12 @@ class NetMath:
             for term in query_tokens:
                 term_counts[term] = term_counts.get(term, 0) + 1
 
+            # basiccally we loop through each term and count within the dictionary and divide the count by the total number of terms.
             query_tf = {term: count / total_terms for term, count in term_counts.items()}
 
             query_tf_idf = {}
 
+            # then perform tf-idf calculation.
             tf_idf = 0.0
             for term in query_tf:
                 idf = self.calculate_inverse_doc_freq(term)
@@ -150,8 +153,9 @@ class NetMath:
 
             if query_norm == 0 or doc_norm == 0:
                 return 0.0
+            similarity = dot_product / (query_norm * doc_norm)
 
-            return dot_product / (query_norm * doc_norm)
+            return min(1.0, similarity)
 
         def initialize_vectors(self, query_tf_idf, doc_tf_idf):
             """
@@ -203,16 +207,16 @@ class NetMath:
             for doc_tf_scores in doc_tf_idf.values():
                 vocab_terms.update(doc_tf_scores.keys())
 
-            # Convert to sorted list for consistent ordering
+            # Convert to sorted list for sorted ordering
             vocab_terms = sorted(vocab_terms)
 
-            # Convert each query TF-IDF to a vector
+            # convert each query TF-IDF to a vector
             self.query_vectors = []
             for query_tf_idf in query_tf_idfs:
                 query_vector = np.array([query_tf_idf.get(term, 0) for term in vocab_terms])
                 self.query_vectors.append(query_vector)
 
-            # Convert document TF-IDFs to vectors
+            # do the same for the documents
             self.doc_vectors = []
             for doc_id, tf_idf_scores in doc_tf_idf.items():
                 doc_vector = np.array([tf_idf_scores.get(term, 0) for term in vocab_terms])
@@ -265,9 +269,21 @@ class NetMath:
                 else:
                     similarities.append(dot_product / (query_norm * doc_norm))
 
-            # Combine similarities using weights
-            final_similarity = sum(sim * weight for sim, weight in zip(similarities, weights))
+            # Calculate the weighted similarities zip(basically combines multiple iterables into one so we combine the similarities with the associated weight)
+            weighted_similarities = []
+            for sim, weight in zip(similarities, weights):
+                weighted_similarities.append(sim * weight)
+
+            # sum the weighted similarities
+            final_similarity = sum(weighted_similarities)
+
+            # ensure the result does not exceed 1.0
+            final_similarity = min(1.0, final_similarity)
+
             return final_similarity
+
+            return min(1.0, final_similarity)
+
     class BM25Calculator:
         def __init__(self, inverted_index, doc_lengths, k1=1.5, b=0.75):
             """

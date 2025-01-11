@@ -6,14 +6,14 @@ from typing import List, Optional, Dict, Union
 import logging
 from enum import Enum
 
-from search_engine.search_engine_ref import TFIDFEngine, BM25Engine, NEREngine
+from search_engine.search_engines import TFIDFEngine, BM25Engine, NEREngine
 from net_components.html_content_processor import read_folder_path, HTMLParser
 
 # Setup logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-use_query_expansion_var = True
+use_query_expansion_var = False
 
 # Pydantic models, these are used to identify which engines we can use and switch between.
 class SearchEngineType(str, Enum):
@@ -71,7 +71,7 @@ class SearchApp:
         self.html_parser = HTMLParser(file_path_list)
         self.html_parser.set_use_json(True) # This enables whether you load json data from directories
         self.html_parser.set_use_stemming(False) # This enables whether you use stemming
-        self.html_parser.set_use_lemmatizer(False) # This enables whether you use lemmatizer.
+        self.html_parser.set_use_lemmatizer(True) # This enables whether you use lemmatizer.
         self.html_parser.parse_and_process_html()
         # self.html_parser.save_to_json()
 
@@ -84,7 +84,7 @@ class SearchApp:
 
         # Build indices for each engine
         for engine in self.search_engines.values():
-            engine.set_json(False) # This enables whether you want to use json with the inverted index.
+            engine.set_json(True) # This enables whether you want to use json with the inverted index.
             engine.build_inverted_index()
             if isinstance(engine, TFIDFEngine):
                 engine.debug_tf_idf()

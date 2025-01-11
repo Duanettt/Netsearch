@@ -61,14 +61,6 @@ class HTMLParser:
         self.use_lemmatizer = False
 
 
-
-
-    # def tokenize_html(self):
-    #     for i in range(len(self.parsed_html_list)):
-    #         tokenized_word = word_tokenize(self.parsed_html_list[i])
-    #         self.tokenized_data.append({'file': os.path.basename(self.file_path_list[i]), 'tokens': tokenized_word})
-    #     return self.tokenized_data
-
     def parse_and_process_html(self):
         print("Now parsing and processing HTML files!")
         # condition variables to allow for loading json.
@@ -124,11 +116,11 @@ class HTMLParser:
                                 game_bio_info[header_text] = info_text
 
                     # Clean up HTML content
-                    # cleaned_html = cleanup_html(''.join(information_contents))
-                    # print(f"[DEBUG] Cleaned HTML content: {cleaned_html[:100]}...")
+                    cleaned_html = cleanup_html(''.join(information_contents))
+                    print(f"[DEBUG] Cleaned HTML content: {cleaned_html[:100]}...")
 
                     # Tokenize the cleaned HTML
-                    tokens = self.tokenize_content(''.join(information_contents))
+                    tokens = self.tokenize_content(cleaned_html)
                     print(f"[DEBUG] Tokenized content ({len(tokens)} tokens): {tokens[:10]}...")
 
                     # text processing involves using stemming or using lemmatisation.

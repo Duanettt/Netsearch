@@ -1,6 +1,30 @@
 {
-    "gta": {
-        "expanded_query": "Grand Theft Auto: Vice City, Grand Theft Auto: San Andreas, Grand Theft Auto III",
-        "timestamp": "2025-01-10T13:53:10.687898"
+    "ico": {
+        "expanded_query": "Shadow of the Colossus, The Last Guardian, Okami",
+        "timestamp": "2025-01-10T16:45:07.662123"
+    },
+    "ICO": {
+        "expanded_query": "Shadow of the Colossus, Okami, Beyond Good & Evil",
+        "timestamp": "2025-01-10T16:46:18.122815"
+    },
+    "oKAMI": {
+        "expanded_query": "Okage: Shadow King, Shadow of the Colossus, Ico.",
+        "timestamp": "2025-01-10T16:47:21.324007"
+    },
+    "Devil Kings": {
+        "expanded_query": "Dynasty Warriors 5, Samurai Warriors 2, Sengoku Basara 2",
+        "timestamp": "2025-01-10T16:47:40.894929"
+    },
+    "Dynasty Warrior": {
+        "expanded_query": "Dynasty Warriors 3, Dynasty Warriors 4, Samurai Warriors.",
+        "timestamp": "2025-01-10T16:48:05.074898"
+    },
+    "Hunting Genre Games": {
+        "expanded_query": "Cabela's Big Game Hunter, Cabela's Dangerous Hunts, Cabela's Deer Hunt.",
+        "timestamp": "2025-01-10T16:48:46.101670"
+    },
+    "Game Develoepd by Eurocom": {
+        "expanded_query": "Sphinx and the Cursed Mummy, James Bond 007: Nightfire, Harry Potter and the Chamber of Secrets.",
+        "timestamp": "2025-01-10T16:49:05.575097"
     }
 }
